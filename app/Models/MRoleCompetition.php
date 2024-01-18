@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MRoleCommittee extends Model
+class MRoleCompetition extends Model
 {
     protected $table = 'm_level_committee';
     protected $perPage = 10;
@@ -23,7 +23,7 @@ class MRoleCommittee extends Model
 
     public static function baseQuery()
 	{
-		return MLevelCommittee::select(
+		return MRoleCompetition::select(
 			'id',
 			'name',
 			'score',

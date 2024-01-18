@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MRoleCommittee extends Model
+class MLevelCompetition extends Model
 {
-    protected $table = 'm_level_committee';
+    protected $table = 'm_level_competition';
     protected $perPage = 10;
 	public $timestamps = true;
 
     protected $fillable = [
         'name',
+        'id_activity_category',
         'score',
         'na',
         'created_at',
@@ -23,9 +24,10 @@ class MRoleCommittee extends Model
 
     public static function baseQuery()
 	{
-		return MLevelCommittee::select(
+		return MLevelCompetition::select(
 			'id',
 			'name',
+			'id_activity_category',
 			'score',
             'na'
 		);
