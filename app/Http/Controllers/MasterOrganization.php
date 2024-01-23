@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MLevelCommittee;
-use App\Models\MRoleCommittee;
+use App\Models\MLevelOrganization;
+use App\Models\MRoleOrganization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class MasterCommittee extends Controller
+class MasterOrganization extends Controller
 {
     public function getLevel(Request $request)
     {
@@ -28,10 +28,10 @@ class MasterCommittee extends Controller
         }
 
         try {
-            $data = MLevelCommittee::baseQuery();
+            $data = MLevelOrganization::baseQuery();
             if ($request->search)
-                $data = MLevelCommittee::searchFilter($data, $request->search);
-            $data = MLevelCommittee::statusFilter($data, $request->status);
+                $data = MLevelOrganization::searchFilter($data, $request->search);
+            $data = MLevelOrganization::statusFilter($data, $request->status);
             $data =  $data->orderBy('id', 'asc');
             $limit = $request->limit;
             if ($request->limit == 0)
@@ -55,7 +55,7 @@ class MasterCommittee extends Controller
             if (!isset($id)) return response()->json([
                 'message' => "Contact IT Dev"
             ], 400);
-            $res = MLevelCommittee::baseQuery()
+            $res = MLevelOrganization::baseQuery()
                 ->where('id', '=', $id)
                 ->get();
             return response()->json($res);
@@ -91,7 +91,7 @@ class MasterCommittee extends Controller
                 'created_at' =>date('Y-m-d H:i:s'),
             );
 
-            $master = MLevelCommittee::create($data);
+            $master = MLevelOrganization::create($data);
 
             if ($master) {
                 return response()->json([
@@ -137,7 +137,7 @@ class MasterCommittee extends Controller
                 'updated_at' =>date('Y-m-d H:i:s'), 
             );
 
-            $affected = MLevelCommittee::where('id', $request->id)->update($data);
+            $affected = MLevelOrganization::where('id', $request->id)->update($data);
 
             if ($affected) {
                 return response()->json([
@@ -162,7 +162,7 @@ class MasterCommittee extends Controller
     public function deleteLevel($id)
     {
         try {
-            $affected = MLevelCommittee::where('id', $id)->delete();
+            $affected = MLevelOrganization::where('id', $id)->delete();
 
             if ($affected) {
                 return response()->json([
@@ -201,10 +201,10 @@ class MasterCommittee extends Controller
         }
 
         try {
-            $data = MRoleCommittee::baseQuery();
+            $data = MRoleOrganization::baseQuery();
             if ($request->search)
-                $data = MRoleCommittee::searchFilter($data, $request->search);
-            $data = MRoleCommittee::statusFilter($data, $request->status);
+                $data = MRoleOrganization::searchFilter($data, $request->search);
+            $data = MRoleOrganization::statusFilter($data, $request->status);
             $data =  $data->orderBy('id', 'asc');
             $limit = $request->limit;
             if ($request->limit == 0)
@@ -228,7 +228,7 @@ class MasterCommittee extends Controller
             if (!isset($id)) return response()->json([
                 'message' => "Contact IT Dev"
             ], 400);
-            $res = MRoleCommittee::baseQuery()
+            $res = MRoleOrganization::baseQuery()
                 ->where('id', '=', $id)
                 ->get();
             return response()->json($res);
@@ -262,7 +262,7 @@ class MasterCommittee extends Controller
                 'created_at' =>date('Y-m-d H:i:s'),
             );
 
-            $master = MRoleCommittee::create($data);
+            $master = MRoleOrganization::create($data);
 
             if ($master) {
                 return response()->json([
@@ -306,7 +306,7 @@ class MasterCommittee extends Controller
                 'updated_at' =>date('Y-m-d H:i:s'),
             );
 
-            $affected = MRoleCommittee::where('id', $request->id)->update($data);
+            $affected = MRoleOrganization::where('id', $request->id)->update($data);
 
             if ($affected) {
                 return response()->json([
@@ -331,7 +331,7 @@ class MasterCommittee extends Controller
     public function deleteRole($id)
     {
         try {
-            $affected = MRoleCommittee::where('id', $id)->delete();
+            $affected = MRoleOrganization::where('id', $id)->delete();
 
             if ($affected) {
                 return response()->json([
