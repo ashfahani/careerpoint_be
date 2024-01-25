@@ -41,7 +41,7 @@ class AuthController extends Controller
             }
     
             // Check NIK/NIP exist
-            $user = User::where('id_user', $request->username)->first();
+            $user = User::where('nim_nik', $request->username)->first();
     
             // Check Password
             if(!$user || !Hash::check($request->password, $user->password, []))
@@ -50,10 +50,10 @@ class AuthController extends Controller
                     'message' => 'Username or password does not match!',
                 ], 'Authentication failed', 401);
             }
-    
+            
             $token = $user->createToken($request->username)->plainTextToken;
             $cookie = cookie(name: 'jwt', value: $token, minutes: 50 * 24);
-    
+
             return ResponseFormatter::success([
                 'access_token' => $token,
                 'user' => $user
@@ -137,7 +137,7 @@ class AuthController extends Controller
             $request->validate([
                 'token' => 'required',
                 'email' => 'required|email',
-                'password' => ['required', Password::defaults()]
+                'password' => ['required', Rules\Password::defaults()]
             ]);
 
             $status = Password::reset(
@@ -177,12 +177,12 @@ class AuthController extends Controller
         $newPassword = $request->newPassword;
         $confirmPassword = $request->confirmPassword;
 
-        $user = Auth::guard('api')->user();
+        $user = Auth::user();
         if($user->has_password){
             if(!Hash::check($oldPassword, $user->password)){
                 return ResponseFormatter::error(['message' => 'Wrong old password'], 'Validation Error!', 422);
             }
-            if(!Hash::check($newPassword, $user->password)){
+            if($newPassword == $oldPassword){
                 return ResponseFormatter::error(['message' => 'New Password cannot same as current password'], 'Validation Error!', 422);
             }
             if($confirmPassword != $newPassword){

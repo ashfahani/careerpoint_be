@@ -34,7 +34,7 @@ class UserController extends Controller
 
         try {
             $data = array(
-                'id_user' => $request->nim_nik,
+                'nim_nik' => $request->nim_nik,
                 'name' => $request->name,
                 'password' =>Hash::make($request->password),
                 'id_user_role' => $request->id_user_role,
@@ -92,7 +92,7 @@ class UserController extends Controller
             if ($request->search)
                 $data = User::searchFilter($data, $request->search);
             $data = User::statusFilter($data, $request->status);
-            $data =  $data->orderBy('id', 'asc');
+            $data =  $data->orderBy('nim_nik', 'asc');
             $limit = $request->limit;
             if ($request->limit == 0)
                 $limit = $data->get()->count();
@@ -116,7 +116,7 @@ class UserController extends Controller
                 'message' => "Contact IT Dev"
             ], 400);
             $res = User::baseQuery()
-                ->where('u.id_user', '=', $id)
+                ->where('u.nim_nik', '=', $id)
                 ->get();
             return response()->json($res);
         } catch (\Throwable  $e) {
@@ -160,7 +160,7 @@ class UserController extends Controller
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $affected = User::where('id_user', $request->nim_nik)->update($data);
+            $affected = User::where('nim_nik', $request->nim_nik)->update($data);
 
             if ($affected) {
                 return response()->json([
@@ -183,7 +183,7 @@ class UserController extends Controller
     public function deleteUser($id)
     {
         try {
-            $affected = User::where('id_user', $id)->delete();
+            $affected = User::where('nim_nik', $id)->delete();
 
             if ($affected) {
                 return response()->json([

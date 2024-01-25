@@ -37,8 +37,8 @@ Route::get('/unauthorized', function () {
 // Public routes of authtication
 Route::controller(AuthController::class)->group(function() {
     Route::post('/login', 'login');
-    Route::post('/reset-password', 'passwordReset');
-    Route::post('/change-password', 'changePassword');
+    Route::post('/reset-password', 'passwordReset')->name('password.reset');
+    Route::post('/change-password', 'changePassword')->name('password.change')->middleware('auth:sanctum');
     Route::post('/forget-password', 'forgetPassword');
 });
 

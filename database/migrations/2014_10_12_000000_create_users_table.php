@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('m_users', function (Blueprint $table) {
-            $table->string('id_user', 50)->primary();
+            $table->id();
+            $table->string('nim_nik', 50)->unique();
             $table->string('name');
             $table->string('password');
             $table->unsignedInteger('id_user_role');
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->string('mentor', 50)->nullable();
             $table->rememberToken();
             $table->enum('na', ['N', 'Y'])->default('N');
+            $table->integer('has_password')->default('0');
             $table->timestamps();
             $table->string('created_by', 50)->nullable();
             $table->string('updated_by', 50)->nullable();
