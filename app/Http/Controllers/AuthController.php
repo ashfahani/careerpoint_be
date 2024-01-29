@@ -37,7 +37,7 @@ class AuthController extends Controller
                 ]
             );
             if ($validation->fails()) {
-                return ResponseFormatter::error($validation->error(), 'Validation Error!');
+                return ResponseFormatter::error($validation->errors(), 'Validation Error!');
             }
     
             // Check NIK/NIP exist
@@ -107,7 +107,7 @@ class AuthController extends Controller
         ]);
 
         if($validation->fails()){
-            return ResponseFormatter::error($validation->error(), 'Validation Error!');
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         $email = $request->email;
@@ -171,7 +171,7 @@ class AuthController extends Controller
         ]);
 
         if($validation->fails()){
-            return ResponseFormatter::error($validation->error(), 'Validation Error!', 422);
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!', 422);
         }
         $oldPassword = $request->oldPassword;
         $newPassword = $request->newPassword;

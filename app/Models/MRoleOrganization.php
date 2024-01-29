@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MRoleOrganization extends Model
 {
-    protected $table = 'm_level_organization';
+    protected $table = 'm_role_organization';
     protected $perPage = 10;
 	public $timestamps = true;
 

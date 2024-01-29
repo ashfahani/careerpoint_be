@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MRoleCompetition extends Model
 {
-    protected $table = 'm_level_committee';
+    protected $table = 'm_role_competition';
     protected $perPage = 10;
 	public $timestamps = true;
 

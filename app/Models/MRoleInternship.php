@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MRoleInternship extends Model
 {
-    protected $table = 'm_level_internship';
+    protected $table = 'm_role_internship';
     protected $perPage = 10;
 	public $timestamps = true;
 

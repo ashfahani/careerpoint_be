@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class MRoleCommittee extends Model
 {
-    protected $table = 'm_level_committee';
+    protected $table = 'm_role_committee';
     protected $perPage = 10;
 	public $timestamps = true;
 

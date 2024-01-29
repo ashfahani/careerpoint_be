@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ResponseFormatter;
 use App\Models\MLevelOrganization;
 use App\Models\MRoleOrganization;
 use Illuminate\Http\Request;
@@ -21,10 +22,7 @@ class MasterOrganization extends Controller
             ]
         );
         if ($validation->fails()) {
-            return response()->json(
-                ['error' => $validation->errors()],
-                400
-            );
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {
@@ -38,33 +36,38 @@ class MasterOrganization extends Controller
                 $limit = $data->get()->count();
             $data =  $data->paginate($limit);
 
-            return response()->json($data);
+            return ResponseFormatter::success($data, 'Master Organization Level');
         } catch (\Throwable  $e) {
             Log::debug('getLevel');
             Log::debug($e);
 
-            return response()->json([
-                'errorMessage' => 'Error! Contact IT Dev',
-            ], 400);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Get Level Failed', 400);
         }
     }
 
     public function getLevelDetails($id)
     {
         try {
-            if (!isset($id)) return response()->json([
-                'message' => "Contact IT Dev"
-            ], 400);
+            if (!isset($id)){
+                return ResponseFormatter::error([
+                    'message' => 'Error! Contact IT Dev',
+                    'error' => 'Parameter is missing',
+                ], 'Get Level Failed', 400);
+            } 
             $res = MLevelOrganization::baseQuery()
                 ->where('id', '=', $id)
                 ->get();
-            return response()->json($res);
+            return ResponseFormatter::success($res, 'Master Organization Level Detail');
         } catch (\Throwable  $e) {
             Log::debug('getLevelDetails');
             Log::debug($e);
-            return response()->json([
-                'errorMessage' => 'Error! Contact IT Dev',
-            ], 400);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Get Level Failed', 400);
         }
     }
 
@@ -77,9 +80,7 @@ class MasterOrganization extends Controller
         ]);
 
         if ($validation->fails()) {
-            return response()->json([
-                'error' => $validation->errors()
-            ], 422);
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {
@@ -87,28 +88,24 @@ class MasterOrganization extends Controller
                 'name' => $request->name,
                 'id_activity_category' => $request->id_activity_category,
                 'score' => $request->score,
-                'created_by' =>auth()->user()->id,
+                'created_by' =>auth()->user()->nim_nik,
                 'created_at' =>date('Y-m-d H:i:s'),
             );
 
             $master = MLevelOrganization::create($data);
 
             if ($master) {
-                return response()->json([
-                    'message' => 'Master Committee Level created',
-                    // 'data' => $data
-                ], 200);
+                return ResponseFormatter::success($data, 'Master Organization Level created');
             } else {
-                return response()->json([
-                    'message' => 'Create Failed'
-                ], 422);
+                return ResponseFormatter::error([], 'Create Failed', 422);
             }
         } catch (\Throwable  $e) {
             Log::debug('addLevel');
             Log::debug($e);
-            return response()->json([
+            return ResponseFormatter::error([
                 'message' => 'Error! Contact IT Dev',
-            ], 400);
+                'error' => $e->getMessage(),
+            ], 'Add Level Failed', 400);
         }
     }
 
@@ -122,9 +119,7 @@ class MasterOrganization extends Controller
         ]);
 
         if ($validation->fails()) {
-            return response()->json([
-                'error' => $validation->errors()
-            ], 422);
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {
@@ -133,29 +128,24 @@ class MasterOrganization extends Controller
                 'id_activity_category' => $request->id_activity_category,
                 'score' => $request->score,
                 'na' => $request->na,   
-                'updated_by' =>auth()->user()->id,
+                'updated_by' =>auth()->user()->nim_nik,
                 'updated_at' =>date('Y-m-d H:i:s'), 
             );
 
             $affected = MLevelOrganization::where('id', $request->id)->update($data);
 
             if ($affected) {
-                return response()->json([
-                    'message' => 'Master Committee Level updated',
-                    // 'idMaterialHead' => $request->idMaterialHead,
-                    // 'data' => $data
-                ], 200);
+                return ResponseFormatter::success($data, 'Master Organization Level updated');                
             } else {
-                return response()->json([
-                    'message' => 'Update Failed',
-                ], 422);
+                return ResponseFormatter::error([], 'Updated Failed', 422);
             }
         } catch (\Throwable  $e) {
             Log::debug('updateLevel');
             Log::debug($e);
-            return response()->json([
+            return ResponseFormatter::error([
                 'message' => 'Error! Contact IT Dev',
-            ], 400);
+                'error' => $e->getMessage(),
+            ], 'Update Level Failed', 400);
         }
     }
 
@@ -165,21 +155,19 @@ class MasterOrganization extends Controller
             $affected = MLevelOrganization::where('id', $id)->delete();
 
             if ($affected) {
-                return response()->json([
-                    'message' => 'Master Committee Level deleted',
-                    'id' => $id
-                ], 200);
+                return ResponseFormatter::success([
+                    'id'=>$id
+                ], 'Master Oraganization Level deleted'); 
             } else {
-                return response()->json([
-                    'message' => 'Delete Failed',
-                ], 422);
+                return ResponseFormatter::error([], 'Delete Failed', 422);
             }
         } catch (\Throwable  $e) {
             Log::debug('deleteLevel');
             Log::debug($e);
-            return response()->json([
+            return ResponseFormatter::error([
                 'message' => 'Error! Contact IT Dev',
-            ], 400);
+                'error' => $e->getMessage(),
+            ], 'Delete Level Failed', 400);
         }
     }
 
@@ -194,10 +182,7 @@ class MasterOrganization extends Controller
             ]
         );
         if ($validation->fails()) {
-            return response()->json(
-                ['error' => $validation->errors()],
-                400
-            );
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {
@@ -211,33 +196,38 @@ class MasterOrganization extends Controller
                 $limit = $data->get()->count();
             $data =  $data->paginate($limit);
 
-            return response()->json($data);
+            return ResponseFormatter::success($data, 'Master Organization Role');
         } catch (\Throwable  $e) {
             Log::debug('getLevel');
             Log::debug($e);
 
-            return response()->json([
-                'errorMessage' => 'Error! Contact IT Dev',
-            ], 400);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Get Role Failed', 400);
         }
     }
 
     public function getRoleDetails($id)
     {
         try {
-            if (!isset($id)) return response()->json([
-                'message' => "Contact IT Dev"
-            ], 400);
+            if (!isset($id)){
+                return ResponseFormatter::error([
+                    'message' => 'Error! Contact IT Dev',
+                    'error' => 'Parameter is missing',
+                ], 'Get Role Failed', 400);
+            } 
             $res = MRoleOrganization::baseQuery()
                 ->where('id', '=', $id)
                 ->get();
-            return response()->json($res);
+            return ResponseFormatter::success($res, 'Master Organization Role Detail');
         } catch (\Throwable  $e) {
             Log::debug('getRoleDetails');
             Log::debug($e);
-            return response()->json([
-                'errorMessage' => 'Error! Contact IT Dev',
-            ], 400);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Get Role Detail Failed', 400);
         }
     }
 
@@ -249,37 +239,31 @@ class MasterOrganization extends Controller
         ]);
 
         if ($validation->fails()) {
-            return response()->json([
-                'error' => $validation->errors()
-            ], 422);
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {
             $data = array(
                 'name' => $request->name,
                 'score' => $request->score,
-                'created_by' =>auth()->user()->id,
+                'created_by' =>auth()->user()->nim_nik,
                 'created_at' =>date('Y-m-d H:i:s'),
             );
 
             $master = MRoleOrganization::create($data);
 
             if ($master) {
-                return response()->json([
-                    'message' => 'Master Committee Role created',
-                    // 'data' => $data
-                ], 200);
+                return ResponseFormatter::success($data, 'Master Organization Role created');
             } else {
-                return response()->json([
-                    'message' => 'Create Failed'
-                ], 422);
+                return ResponseFormatter::error([], 'Create Failed', 422);
             }
         } catch (\Throwable  $e) {
             Log::debug('addRole');
             Log::debug($e);
-            return response()->json([
+            return ResponseFormatter::error([
                 'message' => 'Error! Contact IT Dev',
-            ], 400);
+                'error' => $e->getMessage(),
+            ], 'Add Role Failed', 400);
         }
     }
 
@@ -292,9 +276,7 @@ class MasterOrganization extends Controller
         ]);
 
         if ($validation->fails()) {
-            return response()->json([
-                'error' => $validation->errors()
-            ], 422);
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {
@@ -302,29 +284,24 @@ class MasterOrganization extends Controller
                 'name' => $request->name,
                 'score' => $request->score,
                 'na' => $request->na,    
-                'updated_by' =>auth()->user()->id,
+                'updated_by' =>auth()->user()->nim_nik,
                 'updated_at' =>date('Y-m-d H:i:s'),
             );
 
             $affected = MRoleOrganization::where('id', $request->id)->update($data);
 
             if ($affected) {
-                return response()->json([
-                    'message' => 'Master Committee Role updated',
-                    // 'idMaterialHead' => $request->idMaterialHead,
-                    // 'data' => $data
-                ], 200);
+                return ResponseFormatter::success($data, 'Master Organization Role updated');                
             } else {
-                return response()->json([
-                    'message' => 'Update Failed',
-                ], 422);
+                return ResponseFormatter::error([], 'Updated Failed', 422);
             }
         } catch (\Throwable  $e) {
             Log::debug('updateRole');
             Log::debug($e);
-            return response()->json([
+            return ResponseFormatter::error([
                 'message' => 'Error! Contact IT Dev',
-            ], 400);
+                'error' => $e->getMessage(),
+            ], 'Update Role Failed', 400);
         }
     }
 
@@ -334,21 +311,19 @@ class MasterOrganization extends Controller
             $affected = MRoleOrganization::where('id', $id)->delete();
 
             if ($affected) {
-                return response()->json([
-                    'message' => 'Master Committee Role deleted',
-                    'id' => $id
-                ], 200);
+                return ResponseFormatter::success([
+                    'id'=>$id
+                ], 'Master Organization Role deleted');  
             } else {
-                return response()->json([
-                    'message' => 'Delete Failed',
-                ], 422);
+                return ResponseFormatter::error([], 'Delete Failed', 422);
             }
         } catch (\Throwable  $e) {
             Log::debug('deleteRole');
             Log::debug($e);
-            return response()->json([
+            return ResponseFormatter::error([
                 'message' => 'Error! Contact IT Dev',
-            ], 400);
+                'error' => $e->getMessage(),
+            ], 'Delete Role Failed', 400);
         }
     }
 }

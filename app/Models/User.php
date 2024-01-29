@@ -14,6 +14,7 @@ class User extends Authenticatable
 
     protected $table = 'm_users';
     // protected $primaryKey = 'id_user';
+    protected $perPage = 10;
     /**
      * The attributes that are mass assignable.
      *
@@ -58,22 +59,22 @@ class User extends Authenticatable
 
     public static function baseQuery()
 	{
-		return User::select('u.nim_nik', 'u.name', 'u.password', 'ur.name AS role', 'p.prodi_name', 'u.tahun_id', 'u.email', 'u.email2', 'u.mentor')
-        ->join('m_user_role AS ur', 'u.id_user_role', 'ur.id')
-        ->join('m_prodi AS p', 'u.id_prodi', 'p.id');
+		return User::select('m_users.nim_nik', 'm_users.name', 'm_users.password', 'ur.name AS role', 'p.prodi_name', 'm_users.tahun_id', 'm_users.email', 'm_users.email2', 'm_users.mentor')
+        ->join('m_user_role AS ur', 'm_users.id_user_role', 'ur.id')
+        ->join('m_prodi AS p', 'm_users.id_prodi', 'p.id');
 	}
 
     public static function searchFilter($query, $search)
 	{
 		return $query->where(function ($query) use ($search) {
-			$query->where('name', 'like', '%' . $search . '%')->orWhere('nim_nik', 'like', '%'. $search .'%');
+			$query->where('m_users.name', 'like', '%' . $search . '%')->orWhere('m_users.nim_nik', 'like', '%'. $search .'%');
 		});
 	}
 
     public static function statusFilter($query, $status)
 	{
 		if ($status == 'all') return $query;
-		return $query->where('na', $status);
+		return $query->where('m_users.na', $status);
 	}
 
     public static function orderFilter($query, $orderBy, $order)
