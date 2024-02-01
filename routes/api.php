@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CPCommitteeController;
 use App\Http\Controllers\MasterCommittee;
 use App\Http\Controllers\MasterCompetition;
 use App\Http\Controllers\MasterInternship;
@@ -139,4 +140,16 @@ Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'master'], function ()
     Route::post('seminar/add-role', [MasterSeminar::class, 'addRole']); 
     Route::post('seminar/update-role', [MasterSeminar::class, 'updateRole']); 
     Route::post('seminar/delete-role/{id}', [MasterSeminar::class, 'deleteRole']);
+});
+
+Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'external'], function () {
+    // Committee
+    Route::post('committee/get-cp', [CPCommitteeController::class, 'getCP']);
+    Route::get('committee/get-cp-detail/{id}', [CPCommitteeController::class, 'getCPDetails']);
+    Route::post('committee/add', [CPCommitteeController::class, 'add']);    
+    Route::post('committee/update', [CPCommitteeController::class, 'update']);
+    Route::post('committee/delete/{id}', [CPCommitteeController::class, 'delete']);
+    Route::post('committee/get-by-mentor', [CPCommitteeController::class, 'getCPbyMentor']);    
+    Route::post('committee/approve-cp', [CPCommitteeController::class, 'approve']);
+    Route::post('committee/reject-cp', [CPCommitteeController::class, 'reject']);
 });

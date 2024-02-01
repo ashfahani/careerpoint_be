@@ -49,4 +49,9 @@ class MRoleCommittee extends Model
 		if ($orderBy == '') return $query;
 		return $query->orderBy($orderBy, $order);
 	}
+
+	public static function getScore($id)
+	{
+		return MRoleCommittee::select('score')->where('id', $id)->where('na', 'n');
+	}
 }
