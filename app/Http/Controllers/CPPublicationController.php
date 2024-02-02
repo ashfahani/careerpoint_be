@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseFormatter;
-use App\Models\CPCommittee;
+use App\Models\CPPublication;
 use App\Models\Logs;
-use App\Models\MLevelCommittee;
-use App\Models\MRoleCommittee;
+use App\Models\MLevelPublication;
+use App\Models\MRolePublication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class CPCommitteeController extends Controller
+class CPPublicationController extends Controller
 {
     public function getCP(Request $request)
     {
@@ -28,11 +28,11 @@ class CPCommitteeController extends Controller
         }
 
         try {
-            $data = CPCommittee::baseQuery();
+            $data = CPPublication::baseQuery();
             if ($request->search){
-                $data = CPCommittee::searchFilter($data, $request->search);
+                $data = CPPublication::searchFilter($data, $request->search);
             }
-            $data = CPCommittee::statusFilter($data, $request->status);
+            $data = CPPublication::statusFilter($data, $request->status);
             if(auth()->user()->id_user_role !== '1' || auth()->user()->id_user_role !== '2'){       // Sesuaikan dengan id_role user
                 $data = $data->where('cp.id_user', auth()->user()->nim_nik);
             }
@@ -44,7 +44,7 @@ class CPCommitteeController extends Controller
 
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Committee',
+                'activity' => 'Get CP Publication',
                 'stat' => 'success'
             );
             Logs::create($logInfo);
@@ -55,7 +55,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Committee',
+                'activity' => 'Get CP Publication',
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -75,12 +75,12 @@ class CPCommitteeController extends Controller
                     'error' => 'Parameter is missing',
                 ], 'Get CP Failed', 400);
             } 
-            $res = CPCommittee::baseQuery()
+            $res = CPPublication::baseQuery()
                 ->where('cp.id', '=', $id)
                 ->get();
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get Details CP Committee ID = '.$id,
+                'activity' => 'Get Details CP Publication ID = '.$id,
                 'stat' => 'success'
             );
             Logs::create($logInfo);
@@ -90,7 +90,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get Details CP Committee ID = '.$id,
+                'activity' => 'Get Details CP Publication ID = '.$id,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -111,8 +111,8 @@ class CPCommitteeController extends Controller
                 'activity_name' => ['required', 'string', 'max:255'],
                 'initial_period' => ['required', 'date_format:Y-m-d'],
                 'final_period' => ['required', 'date_format:Y-m-d', 'after_or_equal:initial_period'],
-                'id_level' => ['exists:m_level_committee,id'],
-                'id_role' => ['exists:m_role_committee,id'],
+                'id_level' => ['exists:m_level_publication,id'],
+                'id_role' => ['exists:m_role_publication,id'],
                 'file' => ['nullable', 'file', 'max:2563', 'mimes:jpg,png,pdf,doc,docx'],     
             ]
         );
@@ -121,8 +121,8 @@ class CPCommitteeController extends Controller
         }
 
         try {
-            $l_score = MLevelCommittee::getScore($request->id_level)->where('id_activity_category', '2')->first();
-            $r_score = MRoleCommittee::getScore($request->id_role)->first();
+            $l_score = MLevelPublication::getScore($request->id_level)->where('id_activity_category', '2')->first();
+            $r_score = MRolePublication::getScore($request->id_role)->first();
             if(empty($l_score) || empty($r_score)){
                 return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
             }
@@ -134,9 +134,9 @@ class CPCommitteeController extends Controller
             if(!empty($request->file('file')) || $request->file('file') !== ''){
                 $file = $request->file('file');
                 $file_name = auth()->user()->nim_nik."_".$file->getClientOriginalName();
-                $file_save = "committee/".$file_name;
+                $file_save = "publication/".$file_name;
                 $file_type = $file->getClientOriginalExtension();
-                $file->storeAs('files/committee', $file_name);
+                $file->storeAs('files/publication', $file_name);
             }
             
             $data = array(
@@ -158,12 +158,12 @@ class CPCommitteeController extends Controller
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $insert = CPCommittee::insertGetId($data);
+            $insert = CPPublication::insertGetId($data);
 
             if ($insert) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Add CP Committee ID = '.$insert,
+                    'activity' => 'Add CP Publication ID = '.$insert,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -171,7 +171,7 @@ class CPCommitteeController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Add CP Committee',
+                    'activity' => 'Add CP Publication',
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -182,7 +182,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Add CP Committee',
+                'activity' => 'Add CP Publication',
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -196,13 +196,13 @@ class CPCommitteeController extends Controller
     public function update(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_cp_committee,id'],
+            'id_cp' => ['required', 'exists:t_cp_publication,id'],
             'id_activity_type' => ['exists:m_activity_type,id'],
             'activity_name' => ['required', 'string', 'max:255'],
             'initial_period' => ['required', 'date_format:Y-m-d'],
             'final_period' => ['required', 'date_format:Y-m-d', 'after_or_equal:initial_period'],
-            'id_level' => ['exists:m_level_committee,id'],
-            'id_role' => ['exists:m_role_committee,id'],
+            'id_level' => ['exists:m_level_publication,id'],
+            'id_role' => ['exists:m_role_publication,id'],
             'file' => ['nullable', 'file', 'max:2563', 'mimes:jpg,png,pdf,doc,docx'],             
         ]);
 
@@ -211,8 +211,8 @@ class CPCommitteeController extends Controller
         }
 
         try {
-            $l_score = MLevelCommittee::getScore($request->id_level)->first();
-            $r_score = MRoleCommittee::getScore($request->id_role)->first();
+            $l_score = MLevelPublication::getScore($request->id_level)->first();
+            $r_score = MRolePublication::getScore($request->id_role)->first();
             if(empty($l_score) || empty($r_score)){
                 return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
             }
@@ -224,9 +224,9 @@ class CPCommitteeController extends Controller
             if(!empty($request->file('file')) || $request->file('file') !== ''){
                 $file = $request->file('file');
                 $file_name = auth()->user()->nim_nik."_".$file->getClientOriginalName();
-                $file_save = "committee/".$file_name;
+                $file_save = "publication/".$file_name;
                 $file_type = $file->getClientOriginalExtension();
-                $file->storeAs('files/committee', $file_name);
+                $file->storeAs('files/publication', $file_name);
             }
             
             $data = array(
@@ -246,12 +246,12 @@ class CPCommitteeController extends Controller
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $affected = CPCommittee::where('id', $request->id_cp)->update($data);
+            $affected = CPPublication::where('id', $request->id_cp)->update($data);
 
             if ($affected) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Update CP Committee ID = '.$request->id_cp,
+                    'activity' => 'Update CP Publication ID = '.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -259,7 +259,7 @@ class CPCommitteeController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Update CP Committee ID = '.$request->id_cp,
+                    'activity' => 'Update CP Publication ID = '.$request->id_cp,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -270,7 +270,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Update CP Committee ID = '.$request->id_cp,
+                'activity' => 'Update CP Publication ID = '.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -284,12 +284,12 @@ class CPCommitteeController extends Controller
     public function delete($id)
     {
         try {
-            $affected = CPCommittee::where('id', $id)->delete();
+            $affected = CPPublication::where('id', $id)->delete();
 
             if ($affected) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Delete CP Committee ID = '.$id,
+                    'activity' => 'Delete CP Publication ID = '.$id,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -299,7 +299,7 @@ class CPCommitteeController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Delete CP Committee ID = '.$id,
+                    'activity' => 'Delete CP Publication ID = '.$id,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -310,7 +310,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Delete CP Committee ID = '.$id,
+                'activity' => 'Delete CP Publication ID = '.$id,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -346,11 +346,11 @@ class CPCommitteeController extends Controller
             return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
         try {
-            $data = CPCommittee::queryForMentor()->where('u.mentor', auth()->user()->nim_nik);
+            $data = CPPublication::queryForMentor()->where('u.mentor', auth()->user()->nim_nik);
             if ($request->search){
-                $data = CPCommittee::searchFilter($data, $request->search);
+                $data = CPPublication::searchFilter($data, $request->search);
             }
-            $data = CPCommittee::statusFilter($data, $request->status);
+            $data = CPPublication::statusFilter($data, $request->status);
             $data = $data->orderBy('cp.created_at', 'desc');
             $limit = $request->limit;
             if ($request->limit == 0)
@@ -359,7 +359,7 @@ class CPCommitteeController extends Controller
 
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Committee by Mentor',
+                'activity' => 'Get CP Publication by Mentor',
                 'stat' => 'success'
             );
             Logs::create($logInfo);
@@ -370,7 +370,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Committee by Mentor',
+                'activity' => 'Get CP Publication by Mentor',
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -384,7 +384,7 @@ class CPCommitteeController extends Controller
     public function approve(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_cp_committee,id'],
+            'id_cp' => ['required', 'exists:t_cp_publication,id'],
             // 'approve' => ['required', 'string'],            
         ]);
         if ($validation->fails()) {
@@ -398,10 +398,10 @@ class CPCommitteeController extends Controller
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $affected = CPCommittee::where('id', $request->id_cp)->update($data);
+            $affected = CPPublication::where('id', $request->id_cp)->update($data);
 
             if ($affected) {
-                $getCP = CPCommittee::queryForMentor()->where('cp.id', $request->id_cp)->first();
+                $getCP = CPPublication::queryForMentor()->where('cp.id', $request->id_cp)->first();
                 if(!empty($getCP->email)){
                     $email_to = $getCP->email;
                 }else{
@@ -411,14 +411,14 @@ class CPCommitteeController extends Controller
                     'nama'  => $getCP->mhs_name,
                     'nim'   => $getCP->nim_nik,
                     'activity_name' => $getCP->activity_name,
-                    'cp_name' => 'Kepanitiaan',
+                    'cp_name' => 'Publikasi',
                     'updated_at' => $getCP->updated_at, 
                 );
                 $email = new EmailController();
                 $sendStatus = $email->sendEmailNotifApprove($email_to, $email_info);
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Approve CP Committee by Mentor ID='.$request->id_cp,
+                    'activity' => 'Approve CP Publication by Mentor ID='.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -426,7 +426,7 @@ class CPCommitteeController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Approve CP Committee by Mentor ID='.$request->id_cp,
+                    'activity' => 'Approve CP Publication by Mentor ID='.$request->id_cp,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -437,7 +437,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Approve CP Committee by Mentor ID='.$request->id_cp,
+                'activity' => 'Approve CP Publication by Mentor ID='.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -451,7 +451,7 @@ class CPCommitteeController extends Controller
     public function reject(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_cp_committee,id'],
+            'id_cp' => ['required', 'exists:t_cp_publication,id'],
             'reject_text' => ['required', 'string'],            
         ]);
         if ($validation->fails()) {
@@ -466,10 +466,10 @@ class CPCommitteeController extends Controller
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $affected = CPCommittee::where('id', $request->id_cp)->update($data);
+            $affected = CPPublication::where('id', $request->id_cp)->update($data);
 
             if ($affected) {
-                $getCP = CPCommittee::queryForMentor()->where('cp.id', $request->id_cp)->first();
+                $getCP = CPPublication::queryForMentor()->where('cp.id', $request->id_cp)->first();
                 if(!empty($getCP->email)){
                     $email_to = $getCP->email;
                 }else{
@@ -479,7 +479,7 @@ class CPCommitteeController extends Controller
                     'nama'  => $getCP->mhs_name,
                     'nim'   => $getCP->nim_nik,
                     'activity_name' => $getCP->activity_name,
-                    'cp_name' => 'Kepanitiaan',
+                    'cp_name' => 'Publikasi',
                     'reject_text' => addslashes(trim($getCP->reject_text)),
                     'updated_at' => $getCP->updated_at, 
                 );
@@ -487,7 +487,7 @@ class CPCommitteeController extends Controller
                 $sendStatus = $email->sendEmailNotifReject($email_to, $email_info);
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Reject CP Committee by Mentor ID='.$request->id_cp,
+                    'activity' => 'Reject CP Publication by Mentor ID='.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -495,7 +495,7 @@ class CPCommitteeController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Reject CP Committee by Mentor ID='.$request->id_cp,
+                    'activity' => 'Reject CP Publication by Mentor ID='.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -506,7 +506,7 @@ class CPCommitteeController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Reject CP Committee by Mentor ID='.$request->id_cp,
+                'activity' => 'Reject CP Publication by Mentor ID='.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);

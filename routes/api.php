@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CPCommitteeController;
+use App\Http\Controllers\CPCompetitionController;
+use App\Http\Controllers\CPInternshipController;
+use App\Http\Controllers\CPOrganizationController;
+use App\Http\Controllers\CPPublicationController;
+use App\Http\Controllers\CPSeminarController;
 use App\Http\Controllers\MasterCommittee;
 use App\Http\Controllers\MasterCompetition;
 use App\Http\Controllers\MasterInternship;
@@ -152,4 +157,54 @@ Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'external'], function 
     Route::post('committee/get-by-mentor', [CPCommitteeController::class, 'getCPbyMentor']);    
     Route::post('committee/approve-cp', [CPCommitteeController::class, 'approve']);
     Route::post('committee/reject-cp', [CPCommitteeController::class, 'reject']);
+
+    // Competition
+    Route::post('competition/get-cp', [CPCompetitionController::class, 'getCP']);
+    Route::get('competition/get-cp-detail/{id}', [CPCompetitionController::class, 'getCPDetails']);
+    Route::post('competition/add', [CPCompetitionController::class, 'add']);    
+    Route::post('competition/update', [CPCompetitionController::class, 'update']);
+    Route::post('competition/delete/{id}', [CPCompetitionController::class, 'delete']);
+    Route::post('competition/get-by-mentor', [CPCompetitionController::class, 'getCPbyMentor']);    
+    Route::post('competition/approve-cp', [CPCompetitionController::class, 'approve']);
+    Route::post('competition/reject-cp', [CPCompetitionController::class, 'reject']);
+
+    // Organization
+    Route::post('organization/get-cp', [CPOrganizationController::class, 'getCP']);
+    Route::get('organization/get-cp-detail/{id}', [CPOrganizationController::class, 'getCPDetails']);
+    Route::post('organization/add', [CPOrganizationController::class, 'add']);    
+    Route::post('organization/update', [CPOrganizationController::class, 'update']);
+    Route::post('organization/delete/{id}', [CPOrganizationController::class, 'delete']);
+    Route::post('organization/get-by-mentor', [CPOrganizationController::class, 'getCPbyMentor']);    
+    Route::post('organization/approve-cp', [CPOrganizationController::class, 'approve']);
+    Route::post('organization/reject-cp', [CPOrganizationController::class, 'reject']);
+
+    // Internship
+    Route::post('internship/get-cp', [CPInternshipController::class, 'getCP']);
+    Route::get('internship/get-cp-detail/{id}', [CPInternshipController::class, 'getCPDetails']);
+    Route::post('internship/add', [CPInternshipController::class, 'add']);    
+    Route::post('internship/update', [CPInternshipController::class, 'update']);
+    Route::post('internship/delete/{id}', [CPInternshipController::class, 'delete']);
+    Route::post('internship/get-by-mentor', [CPInternshipController::class, 'getCPbyMentor']);    
+    Route::post('internship/approve-cp', [CPInternshipController::class, 'approve']);
+    Route::post('internship/reject-cp', [CPInternshipController::class, 'reject']);
+
+    // Publication
+    Route::post('publication/get-cp', [CPPublicationController::class, 'getCP']);
+    Route::get('publication/get-cp-detail/{id}', [CPPublicationController::class, 'getCPDetails']);
+    Route::post('publication/add', [CPPublicationController::class, 'add']);    
+    Route::post('publication/update', [CPPublicationController::class, 'update']);
+    Route::post('publication/delete/{id}', [CPPublicationController::class, 'delete']);
+    Route::post('publication/get-by-mentor', [CPPublicationController::class, 'getCPbyMentor']);    
+    Route::post('publication/approve-cp', [CPPublicationController::class, 'approve']);
+    Route::post('publication/reject-cp', [CPPublicationController::class, 'reject']);
+
+    // Seminar
+    Route::post('seminar/get-cp', [CPSeminarController::class, 'getCP']);
+    Route::get('seminar/get-cp-detail/{id}', [CPSeminarController::class, 'getCPDetails']);
+    Route::post('seminar/add', [CPSeminarController::class, 'add']);    
+    Route::post('seminar/update', [CPSeminarController::class, 'update']);
+    Route::post('seminar/delete/{id}', [CPSeminarController::class, 'delete']);
+    Route::post('seminar/get-by-mentor', [CPSeminarController::class, 'getCPbyMentor']);    
+    Route::post('seminar/approve-cp', [CPSeminarController::class, 'approve']);
+    Route::post('seminar/reject-cp', [CPSeminarController::class, 'reject']);
 });

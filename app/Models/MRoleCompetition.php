@@ -49,4 +49,9 @@ class MRoleCompetition extends Model
 		if ($orderBy == '') return $query;
 		return $query->orderBy($orderBy, $order);
 	}
+
+	public static function getScore($id)
+	{
+		return MLevelCommittee::select('score')->where('id', $id)->where('na', 'n');
+	}
 }
