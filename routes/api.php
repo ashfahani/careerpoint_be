@@ -226,6 +226,18 @@ Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'internal'], function 
     Route::post('organization/delete-member/{id}', [IntOrganizationController::class, 'deleteMember']);
 
     // Internship
+    Route::post('internship/get-cp', [IntOrganizationController::class, 'getCP']);
+    Route::get('internship/get-cp-detail/{id}', [IntOrganizationController::class, 'getCPDetails']);
+    Route::post('internship/add', [IntOrganizationController::class, 'add']);    
+    Route::post('internship/update', [IntOrganizationController::class, 'update']);
+    Route::post('internship/delete/{id}', [IntOrganizationController::class, 'delete']);    
+    Route::post('internship/finalize-cp', [IntOrganizationController::class, 'finalize']);   
+    Route::post('internship/approve-cp', [IntOrganizationController::class, 'approve']);
+    Route::post('internship/reject-cp', [IntOrganizationController::class, 'reject']);
+    Route::post('internship/get-all-member', [IntOrganizationController::class, 'getAllCPMember']);
+    Route::post('internship/add-member', [IntOrganizationController::class, 'addMember']);
+    Route::post('internship/update-member', [IntOrganizationController::class, 'updateMember']);
+    Route::post('internship/delete-member/{id}', [IntOrganizationController::class, 'deleteMember']);
 
     // Publication
 
