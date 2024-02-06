@@ -7,8 +7,10 @@ use App\Http\Controllers\CPInternshipController;
 use App\Http\Controllers\CPOrganizationController;
 use App\Http\Controllers\CPPublicationController;
 use App\Http\Controllers\CPSeminarController;
+use App\Http\Controllers\IntCommitteeController;
 use App\Http\Controllers\IntInternshipController;
 use App\Http\Controllers\IntOrganizationController;
+use App\Http\Controllers\IntPublicationController;
 use App\Http\Controllers\MasterCommittee;
 use App\Http\Controllers\MasterCompetition;
 use App\Http\Controllers\MasterInternship;
@@ -241,19 +243,35 @@ Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'internal'], function 
     Route::post('internship/delete-member/{id}', [IntInternshipController::class, 'deleteMember']);
 
     // Publication
-    Route::post('publication/get-cp', [IntOrganizationController::class, 'getCP']);
-    Route::get('publication/get-cp-detail/{id}', [IntOrganizationController::class, 'getCPDetails']);
-    Route::post('publication/add', [IntOrganizationController::class, 'add']);    
-    Route::post('publication/update', [IntOrganizationController::class, 'update']);
-    Route::post('publication/delete/{id}', [IntOrganizationController::class, 'delete']);    
-    Route::post('publication/finalize-cp', [IntOrganizationController::class, 'finalize']);   
-    Route::post('publication/approve-cp', [IntOrganizationController::class, 'approve']);
-    Route::post('publication/reject-cp', [IntOrganizationController::class, 'reject']);
-    Route::post('publication/get-all-member', [IntOrganizationController::class, 'getAllCPMember']);
-    Route::post('publication/add-member', [IntOrganizationController::class, 'addMember']);
-    Route::post('publication/update-member', [IntOrganizationController::class, 'updateMember']);
-    Route::post('publication/delete-member/{id}', [IntOrganizationController::class, 'deleteMember']);
+    Route::post('publication/get-cp', [IntPublicationController::class, 'getCP']);
+    Route::get('publication/get-cp-detail/{id}', [IntPublicationController::class, 'getCPDetails']);
+    Route::post('publication/add', [IntPublicationController::class, 'add']);    
+    Route::post('publication/update', [IntPublicationController::class, 'update']);
+    Route::post('publication/delete/{id}', [IntPublicationController::class, 'delete']);    
+    Route::post('publication/finalize-cp', [IntPublicationController::class, 'finalize']);   
+    Route::post('publication/approve-cp', [IntPublicationController::class, 'approve']);
+    Route::post('publication/reject-cp', [IntPublicationController::class, 'reject']);
+    Route::post('publication/get-all-member', [IntPublicationController::class, 'getAllCPMember']);
+    Route::post('publication/add-member', [IntPublicationController::class, 'addMember']);
+    Route::post('publication/update-member', [IntPublicationController::class, 'updateMember']);
+    Route::post('publication/delete-member/{id}', [IntPublicationController::class, 'deleteMember']);
 
     // Committee
+    Route::post('committee/get-cp', [IntCommitteeController::class, 'getCP']);
+    Route::get('committee/get-cp-detail/{id}', [IntCommitteeController::class, 'getCPDetails']);
+    Route::post('committee/add', [IntCommitteeController::class, 'add']);    
+    Route::post('committee/update', [IntCommitteeController::class, 'update']);
+    Route::post('committee/delete/{id}', [IntCommitteeController::class, 'delete']);    
+    Route::post('committee/finalize-cp', [IntCommitteeController::class, 'finalize']);   
+    Route::post('committee/approve-cp', [IntCommitteeController::class, 'approve']);
+    Route::post('committee/reject-cp', [IntCommitteeController::class, 'reject']);
+    Route::post('committee/get-all-member', [IntCommitteeController::class, 'getAllCPMember']);
+    Route::post('committee/add-member', [IntCommitteeController::class, 'addMember']);
+    Route::post('committee/update-member', [IntCommitteeController::class, 'updateMember']);
+    Route::post('committee/delete-member/{id}', [IntCommitteeController::class, 'deleteMember']);
+    Route::post('committee/get-all-participant', [IntCommitteeController::class, 'getAllCPParticipant']);
+    Route::post('committee/add-participant', [IntCommitteeController::class, 'addParticipant']);
+    Route::post('committee/update-participant', [IntCommitteeController::class, 'updateParticipant']);
+    Route::post('committee/delete-participant/{id}', [IntCommitteeController::class, 'deleteParticipant']);
 
 });

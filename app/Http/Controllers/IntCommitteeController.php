@@ -3,17 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseFormatter;
-use App\Models\CPOrganization;
-use App\Models\IntMemberOrganization;
-use App\Models\IntOrganization;
+use App\Models\CPCommittee;
+use App\Models\CPCompetition;
+use App\Models\CPSeminar;
+use App\Models\IntMemberCommittee;
+use App\Models\IntCommittee;
+use App\Models\IntParticipantCommittee;
 use App\Models\Logs;
-use App\Models\MLevelOrganization;
-use App\Models\MRoleOrganization;
+use App\Models\MLevelCommittee;
+use App\Models\MLevelCompetition;
+use App\Models\MLevelSeminar;
+use App\Models\MRoleCommittee;
+use App\Models\MRoleCompetition;
+use App\Models\MRoleSeminar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class IntOrganizationController extends Controller
+class IntCommitteeController extends Controller
 {
     public function getCP(Request $request)
     {
@@ -30,11 +37,11 @@ class IntOrganizationController extends Controller
         }
 
         try {
-            $data = IntOrganization::baseQuery();
+            $data = IntCommittee::baseQuery();
             if ($request->search){
-                $data = IntOrganization::searchFilter($data, $request->search);
+                $data = IntCommittee::searchFilter($data, $request->search);
             }
-            $data = IntOrganization::statusFilter($data, $request->status);
+            $data = IntCommittee::statusFilter($data, $request->status);
             $data =  $data->orderBy('cp.created_at', 'desc');
             $limit = $request->limit;
             if ($request->limit == 0)
@@ -43,7 +50,7 @@ class IntOrganizationController extends Controller
 
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Organization Internal',
+                'activity' => 'Get CP Committee Internal',
                 'stat' => 'success'
             );
             Logs::create($logInfo);
@@ -54,7 +61,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Organization Internal',
+                'activity' => 'Get CP Committee Internal',
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -74,12 +81,12 @@ class IntOrganizationController extends Controller
                     'error' => 'Parameter is missing',
                 ], 'Get CP Failed', 400);
             } 
-            $res = IntOrganization::baseQuery()
+            $res = IntCommittee::baseQuery()
                 ->where('cp.id', '=', $id)
                 ->get();
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get Details CP Organization Internal ID = '.$id,
+                'activity' => 'Get Details CP Committee Internal ID = '.$id,
                 'stat' => 'success'
             );
             Logs::create($logInfo);
@@ -89,7 +96,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get Details CP Organization Internal ID = '.$id,
+                'activity' => 'Get Details CP Committee Internal ID = '.$id,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -109,6 +116,7 @@ class IntOrganizationController extends Controller
                 'activity_name' => ['required', 'string', 'max:255'],
                 'initial_period' => ['required', 'date_format:Y-m-d'],
                 'final_period' => ['required', 'date_format:Y-m-d', 'after_or_equal:initial_period'],
+                'id_committee_type' => ['required', 'exists:m_committee_type,id'],
                 'id_pic' => ['nullable', 'exists:m_users,nim_nik'],
                 'id_supervisor' => ['nullable', 'exists:m_users,nim_nik'],
                 'file' => ['nullable', 'file', 'max:2563', 'mimes:jpg,png,pdf,doc,docx'],     
@@ -126,9 +134,9 @@ class IntOrganizationController extends Controller
             if($request->hasFile('file')){
                 $file = $request->file('file');
                 $file_name = auth()->user()->nim_nik."_".$file->getClientOriginalName();
-                $file_save = "organization/".$file_name;
+                $file_save = "committee/".$file_name;
                 $file_type = $file->getClientOriginalExtension();
-                $file->storeAs('files/organization', $file_name);
+                $file->storeAs('files/committee', $file_name);
             }
             
             $data = array(
@@ -142,18 +150,19 @@ class IntOrganizationController extends Controller
                 'organizer_location' => $request->organizer_location,
                 'id_pic' => $request->id_pic,
                 'id_supervisor' => $request->id_supervisor,
+                'id_committee_type' => $request->id_committee_type,
                 'file' => $file_save,
                 'file_type' => $file_type,
                 'created_by' => auth()->user()->nim_nik,
                 'created_at' => date('Y-m-d H:i:s'),
             );
 
-            $insert = IntOrganization::insertGetId($data);
+            $insert = IntCommittee::insertGetId($data);
 
             if ($insert) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Add CP Organization ID = '.$insert,
+                    'activity' => 'Add CP Committee ID = '.$insert,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -161,7 +170,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Add CP Organization',
+                    'activity' => 'Add CP Committee',
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -172,7 +181,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Add CP Organization',
+                'activity' => 'Add CP Committee',
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -186,11 +195,12 @@ class IntOrganizationController extends Controller
     public function update(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_internal_organization,id'],
+            'id_cp' => ['required', 'exists:t_internal_committee,id'],
             'id_activity_type' => ['exists:m_activity_type,id'],
             'activity_name' => ['required', 'string', 'max:255'],
             'initial_period' => ['required', 'date_format:Y-m-d'],
             'final_period' => ['required', 'date_format:Y-m-d', 'after_or_equal:initial_period'],
+            'id_committee_type' => ['required', 'exists:m_committee_type,id'],
             'id_pic' => ['nullable', 'exists:m_users,nim_nik'],
             'id_supervisor' => ['nullable', 'exists:m_users,nim_nik'],
             'file' => ['nullable', 'file', 'max:2563', 'mimes:jpg,png,pdf,doc,docx'],             
@@ -208,9 +218,9 @@ class IntOrganizationController extends Controller
             if($request->hasFile('file')){
                 $file = $request->file('file');
                 $file_name = auth()->user()->nim_nik."_".$file->getClientOriginalName();
-                $file_save = "organization/".$file_name;
+                $file_save = "committee/".$file_name;
                 $file_type = $file->getClientOriginalExtension();
-                $file->storeAs('files/organization', $file_name);
+                $file->storeAs('files/committee', $file_name);
             }
             
             $data = array(
@@ -223,18 +233,19 @@ class IntOrganizationController extends Controller
                 'organizer_location' => $request->organizer_location,
                 'id_pic' => $request->id_pic,
                 'id_supervisor' => $request->id_supervisor,
+                'id_committee_type' => $request->id_committee_type,
                 'file' => $file_save,
                 'file_type' => $file_type,
                 'updated_by' => auth()->user()->nim_nik,
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $affected = IntOrganization::where('id', $request->id_cp)->update($data);
+            $affected = IntCommittee::where('id', $request->id_cp)->update($data);
 
             if ($affected) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Update CP Organization ID = '.$request->id_cp,
+                    'activity' => 'Update CP Committee ID = '.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -242,7 +253,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Update CP Organization Internal ID = '.$request->id_cp,
+                    'activity' => 'Update CP Committee Internal ID = '.$request->id_cp,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -253,7 +264,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Update CP Organization Internal ID = '.$request->id_cp,
+                'activity' => 'Update CP Committee Internal ID = '.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -267,13 +278,14 @@ class IntOrganizationController extends Controller
     public function delete($id)
     {
         try {
-            $affected = IntOrganization::where('id', $id)->delete();
-            $affected2 = IntMemberOrganization::where('id_internal_organization', $id)->delete();
+            $affected = IntCommittee::where('id', $id)->delete();
+            $affected2 = IntMemberCommittee::where('id_internal_committee', $id)->delete();
+            $affected3 = IntParticipantCommittee::where('id_internal_committee', $id)->delete();
 
-            if ($affected>0 || $affected2>0) {
+            if ($affected>0 || $affected2>0 || $affected3) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Delete CP Organization Internal ID = '.$id,
+                    'activity' => 'Delete CP Committee Internal ID = '.$id,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -283,7 +295,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Delete CP Organization Internal ID = '.$id,
+                    'activity' => 'Delete CP Committee Internal ID = '.$id,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -294,7 +306,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Delete CP Organization Internal ID = '.$id,
+                'activity' => 'Delete CP Committee Internal ID = '.$id,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -313,7 +325,7 @@ class IntOrganizationController extends Controller
     public function finalize(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_internal_organization,id'],
+            'id_cp' => ['required', 'exists:t_internal_committee,id'],
         ]);
         if ($validation->fails()) {
             return ResponseFormatter::error($validation->errors(), 'Validation Error!');
@@ -326,12 +338,12 @@ class IntOrganizationController extends Controller
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $affected = IntOrganization::where('id', $request->id_cp)->update($data);
+            $affected = IntCommittee::where('id', $request->id_cp)->update($data);
 
             if ($affected) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Finalize CP Organization by Mentor ID='.$request->id_cp,
+                    'activity' => 'Finalize CP Committee by Mentor ID='.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -339,7 +351,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Finalize CP Organization by Mentor ID='.$request->id_cp,
+                    'activity' => 'Finalize CP Committee by Mentor ID='.$request->id_cp,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -350,7 +362,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Finalize CP Organization by Mentor ID='.$request->id_cp,
+                'activity' => 'Finalize CP Committee by Mentor ID='.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -364,14 +376,14 @@ class IntOrganizationController extends Controller
     public function approve(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_internal_organization,id'],
+            'id_cp' => ['required', 'exists:t_internal_committee,id'],
         ]);
         if ($validation->fails()) {
             return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {          
-            $listCP = IntOrganization::getCPMember($request->id_cp);
+            $listCP = IntCommittee::getCPMember($request->id_cp);
             foreach($listCP as $r){
                 $CPinfo = array(
                     "id_user"               => $r->id_user,
@@ -390,12 +402,24 @@ class IntOrganizationController extends Controller
                     "na"                    => 'N',
                     "file"                  => $r->file,
                     "file_type"             => $r->file_type,
-                    "id_internal_organization" => $r->id,
+                    "id_internal_committee" => $r->id,
                     "created_at"            => date("Y-m-d H:i:s"),
                     "created_by"            => auth()->user()->nim_nik
                 );
 
-                $insertInt = CPOrganization::insertGetId($CPinfo);
+                if($r->id_committee_type == '1')    // 1. Perlombaan  | 2. Seminar  | 3. Kepanitiaan
+                {
+                    $insertInt = CPCompetition::insertGetId($CPinfo);
+                }
+                elseif($r->id_committee_type == '2')
+                {
+                    $insertInt = CPSeminar::insertGetId($CPinfo);
+                }
+                elseif($r->id_committee_type == '3')
+                {
+                    $insertInt = CPCommittee::insertGetId($CPinfo);
+                }
+                unset($CPinfo);
             }  
             $data = array(
                 'final' => 'N',
@@ -403,19 +427,20 @@ class IntOrganizationController extends Controller
                 'updated_by' => auth()->user()->nim_nik,
                 'updated_at' => date('Y-m-d H:i:s'),
             );
-            $affected = IntOrganization::where('id', $request->id_cp)->update($data);
+            $affected = IntCommittee::where('id', $request->id_cp)->update($data);
 
             $data2 = array(
                 'approve' => 'A',
                 'updated_by' => auth()->user()->nim_nik,
                 'updated_at' => date('Y-m-d H:i:s'),
             );
-            $affected2 = IntMemberOrganization::where('id', $request->id_cp)->update($data2);
+            $affected2 = IntMemberCommittee::where('id', $request->id_cp)->update($data2);
+            $affected3 = IntParticipantCommittee::where('id', $request->id_cp)->update($data2);
 
-            if ($affected>0 || $affected2>0) {
+            if ($affected>0 || $affected2>0 || $affected3>0) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Approve CP Organization by Mentor ID='.$request->id_cp,
+                    'activity' => 'Approve CP Committee by Mentor ID='.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -423,7 +448,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Approve CP Organization by Mentor ID='.$request->id_cp,
+                    'activity' => 'Approve CP Committee by Mentor ID='.$request->id_cp,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -434,7 +459,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Approve CP Organization by Mentor ID='.$request->id_cp,
+                'activity' => 'Approve CP Committee by Mentor ID='.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -448,7 +473,7 @@ class IntOrganizationController extends Controller
     public function reject(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_internal_organization,id'],
+            'id_cp' => ['required', 'exists:t_internal_committee,id'],
             'reject_text' => ['required', 'string'],            
         ]);
         if ($validation->fails()) {
@@ -463,19 +488,20 @@ class IntOrganizationController extends Controller
                 'updated_by' => auth()->user()->nim_nik,
                 'updated_at' => date('Y-m-d H:i:s'),
             );
-            $affected = IntOrganization::where('id', $request->id_cp)->update($data);
+            $affected = IntCommittee::where('id', $request->id_cp)->update($data);
 
             $data2 = array(
                 'approve' => 'R',
                 'updated_by' => auth()->user()->nim_nik,
                 'updated_at' => date('Y-m-d H:i:s'),
             );
-            $affected2 = IntMemberOrganization::where('id', $request->id_cp)->update($data2);
+            $affected2 = IntMemberCommittee::where('id', $request->id_cp)->update($data2);
+            $affected3 = IntParticipantCommittee::where('id', $request->id_cp)->update($data2);
 
-            if ($affected>0 || $affected2>0) {
+            if ($affected>0 || $affected2>0 || $affected3>0) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Reject CP Organization by Mentor ID='.$request->id_cp,
+                    'activity' => 'Reject CP Committee by Mentor ID='.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -483,7 +509,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Reject CP Organization by Mentor ID='.$request->id_cp,
+                    'activity' => 'Reject CP Committee by Mentor ID='.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -494,7 +520,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Reject CP Organization by Mentor ID='.$request->id_cp,
+                'activity' => 'Reject CP Committee by Mentor ID='.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -513,7 +539,7 @@ class IntOrganizationController extends Controller
                 'page' => ['required', 'numeric'],
                 'limit' => ['required', 'numeric'],
                 'status' => ['required', 'string'],
-                'id_cp' => ['required', 'exists:t_internal_organization,id']
+                'id_cp' => ['required', 'exists:t_internal_committee,id']
             ]
         );
         if ($validation->fails()) {
@@ -521,12 +547,12 @@ class IntOrganizationController extends Controller
         }
 
         try {
-            $data = IntMemberOrganization::baseQuery();
+            $data = IntMemberCommittee::baseQuery();
             if ($request->search){
-                $data = IntMemberOrganization::searchFilter($data, $request->search);
+                $data = IntMemberCommittee::searchFilter($data, $request->search);
             }
-            $data = IntMemberOrganization::statusFilter($data, $request->status);
-            $data = $data->where('cp.id_internal_organization', $request->id_cp);
+            $data = IntMemberCommittee::statusFilter($data, $request->status);
+            $data = $data->where('cp.id_internal_committee', $request->id_cp);
             $data = $data->orderBy('cp.created_at', 'desc');
             $limit = $request->limit;
             if ($request->limit == 0)
@@ -535,7 +561,7 @@ class IntOrganizationController extends Controller
 
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Organization Internal Member',
+                'activity' => 'Get CP Committee Internal Member',
                 'stat' => 'success'
             );
             Logs::create($logInfo);
@@ -546,7 +572,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Get CP Organization Internal Member',
+                'activity' => 'Get CP Committee Internal Member',
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -560,26 +586,26 @@ class IntOrganizationController extends Controller
     public function addMember(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_cp' => ['required', 'exists:t_internal_organization,id'],
+            'id_cp' => ['required', 'exists:t_internal_committee,id'],
             'id_user' => ['required', 'exists:m_users,nim_nik'],
-            'id_level' => ['required', 'exists:m_level_organization,id'],
-            'id_role' => ['required', 'exists:m_role_organization,id'],            
+            'id_level' => ['required', 'exists:m_level_committee,id'],
+            'id_role' => ['required', 'exists:m_role_committee,id'],            
         ]);
         if ($validation->fails()) {
             return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
-        try {
-            $l_score = MLevelOrganization::getScore($request->id_level)->first();
-            $r_score = MRoleOrganization::getScore($request->id_role)->first();
+        try {           
+            $l_score = MLevelCommittee::getScore($request->id_level)->first();
+            $r_score = MRoleCommittee::getScore($request->id_role)->first();
             if(empty($l_score) || empty($r_score)){
                 return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
             }
             $score = floatval($l_score->score) * floatval($r_score->score);
-            $CPDetail = IntOrganization::getCPDetail($request->id_cp)->first();
+            $CPDetail = IntCommittee::getCPDetail($request->id_cp)->first();
 
             $data = array(
-                'id_internal_organization' => $request->id_cp,
+                'id_internal_committee' => $request->id_cp,
                 'id_user' => $request->id_user,
                 'initial_period' => date('Y-m-d', strtotime($CPDetail->initial_period)), 
                 'final_period' => date('Y-m-d', strtotime($CPDetail->final_period)),
@@ -591,12 +617,12 @@ class IntOrganizationController extends Controller
                 'created_at' => date('Y-m-d H:i:s'),
             );
 
-            $insert = IntMemberOrganization::insertGetId($data);
+            $insert = IntMemberCommittee::insertGetId($data);
 
             if ($insert) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Add Member of CP Organization ID = '.$request->id_cp,
+                    'activity' => 'Add Member of CP Committee ID = '.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -604,7 +630,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Add Member of CP Organization ID = '.$request->id_cp,
+                    'activity' => 'Add Member of CP Committee ID = '.$request->id_cp,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -615,7 +641,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Add Member CP Organization ID = '.$request->id_cp,
+                'activity' => 'Add Member CP Committee ID = '.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -629,26 +655,26 @@ class IntOrganizationController extends Controller
     public function updateMember(Request $request)
     {
         $validation = Validator::make($request->all(), [
-            'id_member' => ['required', 'exists:t_int_organization_member,id'],
-            // 'id_cp' => ['required', 'exists:t_internal_organization,id'],
+            'id_member' => ['required', 'exists:t_int_committee_member,id'],
+            // 'id_cp' => ['required', 'exists:t_internal_committee,id'],
             'id_user' => ['required', 'exists:m_users,nim_nik'],
-            'id_level' => ['required', 'exists:m_level_organization,id'],
-            'id_role' => ['required', 'exists:m_role_organization,id'],            
+            'id_level' => ['required', 'exists:m_level_committee,id'],
+            'id_role' => ['required', 'exists:m_role_committee,id'],            
         ]);
         if ($validation->fails()) {
             return ResponseFormatter::error($validation->errors(), 'Validation Error!');
         }
 
         try {
-            $l_score = MLevelOrganization::getScore($request->id_level)->first();
-            $r_score = MRoleOrganization::getScore($request->id_role)->first();
+            $l_score = MLevelCommittee::getScore($request->id_level)->first();
+            $r_score = MRoleCommittee::getScore($request->id_role)->first();
             if(empty($l_score) || empty($r_score)){
                 return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
             }
             $score = floatval($l_score->score) * floatval($r_score->score);
             
             $data = array(
-                // 'id_internal_organization' => $request->id_cp,
+                // 'id_internal_committee' => $request->id_cp,
                 'id_user' => $request->id_user,
                 'id_level' => $request->id_level,
                 'id_role' => $request->id_role,
@@ -659,12 +685,12 @@ class IntOrganizationController extends Controller
                 'updated_at' => date('Y-m-d H:i:s'),
             );
 
-            $affected = IntMemberOrganization::where('id', $request->id_member)->update($data);
+            $affected = IntMemberCommittee::where('id', $request->id_member)->update($data);
 
             if ($affected) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Updated Member of CP Organization ID = '.$request->id_cp,
+                    'activity' => 'Updated Member of CP Committee ID = '.$request->id_cp,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -672,7 +698,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Update Member of CP Organization ID = '.$request->id_cp,
+                    'activity' => 'Update Member of CP Committee ID = '.$request->id_cp,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -683,7 +709,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Update Member CP Organization ID = '.$request->id_cp,
+                'activity' => 'Update Member CP Committee ID = '.$request->id_cp,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -697,12 +723,12 @@ class IntOrganizationController extends Controller
     public function deleteMember($id)
     {
         try {
-            $affected = IntMemberOrganization::where('id', $id)->delete();
+            $affected = IntMemberCommittee::where('id', $id)->delete();
 
             if ($affected) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Delete CP Organization Internal Member ID = '.$id,
+                    'activity' => 'Delete CP Committee Internal Member ID = '.$id,
                     'stat' => 'success'
                 );
                 Logs::create($logInfo);
@@ -712,7 +738,7 @@ class IntOrganizationController extends Controller
             } else {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
-                    'activity' => 'Delete CP Organization Internal Member ID = '.$id,
+                    'activity' => 'Delete CP Committee Internal Member ID = '.$id,
                     'stat' => 'error'
                 );
                 Logs::create($logInfo);
@@ -723,7 +749,7 @@ class IntOrganizationController extends Controller
             Log::debug($e);
             $logInfo = array(
                 'user' => auth()->user()->nim_nik,
-                'activity' => 'Delete CP Organization Internal Member ID = '.$id,
+                'activity' => 'Delete CP Committee Internal Member ID = '.$id,
                 'stat' => 'error'
             );
             Logs::create($logInfo);
@@ -731,6 +757,298 @@ class IntOrganizationController extends Controller
                 'message' => 'Error! Contact IT Dev',
                 'error' => $e->getMessage(),
             ], 'Delete Member Failed', 400);
+        }
+    }
+
+    public function getAllCPParticipant(Request $request)
+    {
+        $validation = Validator::make(
+            $request->all(),
+            [
+                'page' => ['required', 'numeric'],
+                'limit' => ['required', 'numeric'],
+                'status' => ['required', 'string'],
+                'id_cp' => ['required', 'exists:t_internal_committee,id']
+            ]
+        );
+        if ($validation->fails()) {
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
+        }
+
+        try {
+            $getType = IntCommittee::select('*')->where('id', $request->id_cp)->first();
+            if($getType->id_committee_type == '1'){
+                $data = IntParticipantCommittee::baseQuery_competition();
+                if ($request->search){
+                    $data = IntParticipantCommittee::searchFilter($data, $request->search);
+                }
+                $data = IntParticipantCommittee::statusFilter($data, $request->status);
+            }elseif($getType->id_committee_type == '2'){
+                $data = IntParticipantCommittee::baseQuery_seminar();
+                if ($request->search){
+                    $data = IntParticipantCommittee::searchFilter($data, $request->search);
+                }
+                $data = IntParticipantCommittee::statusFilter($data, $request->status);
+            }            
+            $data = $data->where('cp.id_internal_committee', $request->id_cp);
+            $data = $data->orderBy('cp.created_at', 'desc');
+            $limit = $request->limit;
+            if ($request->limit == 0)
+                $limit = $data->get()->count();
+            $data =  $data->paginate($limit);
+
+            $logInfo = array(
+                'user' => auth()->user()->nim_nik,
+                'activity' => 'Get CP Committee Internal Member',
+                'stat' => 'success'
+            );
+            Logs::create($logInfo);
+
+            return ResponseFormatter::success($data, 'Get CP Internal Member');
+        } catch (\Throwable  $e) {
+            Log::debug('getCP');
+            Log::debug($e);
+            $logInfo = array(
+                'user' => auth()->user()->nim_nik,
+                'activity' => 'Get CP Committee Internal Member',
+                'stat' => 'error'
+            );
+            Logs::create($logInfo);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Get CP Internal Member Failed', 400);
+        }
+    }
+    public function addParticipant(Request $request)
+    {
+        $validation = Validator::make($request->all(), [
+            'id_cp' => ['required', 'exists:t_internal_committee,id'],          
+        ]);
+        if ($validation->fails()) {
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
+        }
+
+        $getType = IntCommittee::select('*')->where('id', $request->id_cp)->first();
+        if($getType->id_committee_type == '1'){
+            $validation = Validator::make($request->all(), [
+                'id_user' => ['required', 'exists:m_users,nim_nik'],
+                'id_level' => ['required', 'exists:m_level_competition,id'],
+                'id_role' => ['required', 'exists:m_role_competition,id'],            
+            ]);
+            if ($validation->fails()) {
+                return ResponseFormatter::error($validation->errors(), 'Validation Error!');
+            }
+
+            $l_score = MLevelCompetition::getScore($request->id_level)->first();
+            $r_score = MRoleCompetition::getScore($request->id_role)->first();
+            if(empty($l_score) || empty($r_score)){
+                return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
+            }
+            $score = floatval($l_score->score) * floatval($r_score->score);
+
+        }elseif($getType->id_committee_type == '2'){
+            $validation = Validator::make($request->all(), [
+                'id_user' => ['required', 'exists:m_users,nim_nik'],
+                'id_level' => ['required', 'exists:m_level_seminar,id'],
+                'id_role' => ['required', 'exists:m_role_seminar,id'],            
+            ]);
+            if ($validation->fails()) {
+                return ResponseFormatter::error($validation->errors(), 'Validation Error!');
+            }
+
+            $l_score = MLevelSeminar::getScore($request->id_level)->first();
+            $r_score = MRoleSeminar::getScore($request->id_role)->first();
+            if(empty($l_score) || empty($r_score)){
+                return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
+            }
+            $score = floatval($l_score->score) * floatval($r_score->score);
+
+        }            
+        
+
+        try {           
+            $CPDetail = IntCommittee::getCPDetail($request->id_cp)->first();
+
+            $data = array(
+                'id_internal_committee' => $request->id_cp,
+                'id_user' => $request->id_user,
+                'initial_period' => date('Y-m-d', strtotime($CPDetail->initial_period)), 
+                'final_period' => date('Y-m-d', strtotime($CPDetail->final_period)),
+                'id_level' => $request->id_level,
+                'id_role' => $request->id_role,
+                'score' => $score,
+                'role_description' => addslashes(trim($request->role_description)),
+                'created_by' => auth()->user()->nim_nik,
+                'created_at' => date('Y-m-d H:i:s'),
+            );
+
+            $insert = IntParticipantCommittee::insertGetId($data);
+
+            if ($insert) {
+                $logInfo = array(
+                    'user' => auth()->user()->nim_nik,
+                    'activity' => 'Add Participant of CP Committee ID = '.$request->id_cp,
+                    'stat' => 'success'
+                );
+                Logs::create($logInfo);
+                return ResponseFormatter::success($data, 'Add CP Participant');                
+            } else {
+                $logInfo = array(
+                    'user' => auth()->user()->nim_nik,
+                    'activity' => 'Add Participant of CP Committee ID = '.$request->id_cp,
+                    'stat' => 'error'
+                );
+                Logs::create($logInfo);
+                return ResponseFormatter::error([], 'Add CP Participant Failed', 422);
+            }
+        } catch (\Throwable  $e) {
+            Log::debug('addParticipant');
+            Log::debug($e);
+            $logInfo = array(
+                'user' => auth()->user()->nim_nik,
+                'activity' => 'Add Participant CP Committee ID = '.$request->id_cp,
+                'stat' => 'error'
+            );
+            Logs::create($logInfo);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Add Participant Failed', 400);
+        }
+    }
+
+    public function updateParticipant(Request $request)
+    {
+        $validation = Validator::make($request->all(), [
+            'id_cp' => ['required', 'exists:t_internal_committee,id'],          
+        ]);
+        if ($validation->fails()) {
+            return ResponseFormatter::error($validation->errors(), 'Validation Error!');
+        }
+
+        $getType = IntCommittee::select('*')->where('id', $request->id_cp)->first();
+        if($getType->id_committee_type == '1'){
+            $validation = Validator::make($request->all(), [
+                'id_user' => ['required', 'exists:m_users,nim_nik'],
+                'id_level' => ['required', 'exists:m_level_competition,id'],
+                'id_role' => ['required', 'exists:m_role_competition,id'],            
+            ]);
+            if ($validation->fails()) {
+                return ResponseFormatter::error($validation->errors(), 'Validation Error!');
+            }
+
+            $l_score = MLevelCompetition::getScore($request->id_level)->first();
+            $r_score = MRoleCompetition::getScore($request->id_role)->first();
+            if(empty($l_score) || empty($r_score)){
+                return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
+            }
+            $score = floatval($l_score->score) * floatval($r_score->score);
+
+        }elseif($getType->id_committee_type == '2'){
+            $validation = Validator::make($request->all(), [
+                'id_user' => ['required', 'exists:m_users,nim_nik'],
+                'id_level' => ['required', 'exists:m_level_seminar,id'],
+                'id_role' => ['required', 'exists:m_role_seminar,id'],            
+            ]);
+            if ($validation->fails()) {
+                return ResponseFormatter::error($validation->errors(), 'Validation Error!');
+            }
+
+            $l_score = MLevelSeminar::getScore($request->id_level)->first();
+            $r_score = MRoleSeminar::getScore($request->id_role)->first();
+            if(empty($l_score) || empty($r_score)){
+                return ResponseFormatter::error([], 'Level or Role Score are empty!', 404);
+            }
+            $score = floatval($l_score->score) * floatval($r_score->score);
+
+        }         
+
+        try {            
+            $data = array(
+                // 'id_internal_committee' => $request->id_cp,
+                'id_user' => $request->id_user,
+                'id_level' => $request->id_level,
+                'id_role' => $request->id_role,
+                'score' => $score,
+                'role_description' => addslashes(trim($request->role_description)),
+                'na' => $request->na,
+                'updated_by' => auth()->user()->nim_nik,
+                'updated_at' => date('Y-m-d H:i:s'),
+            );
+
+            $affected = IntParticipantCommittee::where('id', $request->id_member)->update($data);
+
+            if ($affected) {
+                $logInfo = array(
+                    'user' => auth()->user()->nim_nik,
+                    'activity' => 'Updated Participant of CP Committee ID = '.$request->id_cp,
+                    'stat' => 'success'
+                );
+                Logs::create($logInfo);
+                return ResponseFormatter::success($data, 'Update CP Participant');                
+            } else {
+                $logInfo = array(
+                    'user' => auth()->user()->nim_nik,
+                    'activity' => 'Update Participant of CP Committee ID = '.$request->id_cp,
+                    'stat' => 'error'
+                );
+                Logs::create($logInfo);
+                return ResponseFormatter::error([], 'Update CP Participant Failed', 422);
+            }
+        } catch (\Throwable  $e) {
+            Log::debug('updateParticipant');
+            Log::debug($e);
+            $logInfo = array(
+                'user' => auth()->user()->nim_nik,
+                'activity' => 'Update Participant CP Committee ID = '.$request->id_cp,
+                'stat' => 'error'
+            );
+            Logs::create($logInfo);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Update Participant Failed', 400);
+        }
+    }
+
+    public function deleteParticipant($id)
+    {
+        try {
+            $affected = IntParticipantCommittee::where('id', $id)->delete();
+
+            if ($affected) {
+                $logInfo = array(
+                    'user' => auth()->user()->nim_nik,
+                    'activity' => 'Delete CP Committee Internal Participant ID = '.$id,
+                    'stat' => 'success'
+                );
+                Logs::create($logInfo);
+                return ResponseFormatter::success([
+                    'id'=>$id
+                ], 'CP Participant deleted');  
+            } else {
+                $logInfo = array(
+                    'user' => auth()->user()->nim_nik,
+                    'activity' => 'Delete CP Committee Internal Participant ID = '.$id,
+                    'stat' => 'error'
+                );
+                Logs::create($logInfo);
+                return ResponseFormatter::error([], 'Delete Participant Failed', 422);
+            }
+        } catch (\Throwable  $e) {
+            Log::debug('delete');
+            Log::debug($e);
+            $logInfo = array(
+                'user' => auth()->user()->nim_nik,
+                'activity' => 'Delete CP Committee Internal Participant ID = '.$id,
+                'stat' => 'error'
+            );
+            Logs::create($logInfo);
+            return ResponseFormatter::error([
+                'message' => 'Error! Contact IT Dev',
+                'error' => $e->getMessage(),
+            ], 'Delete Participant Failed', 400);
         }
     }
 }

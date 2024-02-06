@@ -410,9 +410,9 @@ class IntPublicationController extends Controller
                 'updated_by' => auth()->user()->nim_nik,
                 'updated_at' => date('Y-m-d H:i:s'),
             );
-            $affected2 = IntMemberPublication::where('id', $request->id_cp)->update($data);
+            $affected2 = IntMemberPublication::where('id', $request->id_cp)->update($data2);
 
-            if ($affected) {
+            if ($affected>0 || $affected2>0) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
                     'activity' => 'Approve CP Publication by Mentor ID='.$request->id_cp,
@@ -470,9 +470,9 @@ class IntPublicationController extends Controller
                 'updated_by' => auth()->user()->nim_nik,
                 'updated_at' => date('Y-m-d H:i:s'),
             );
-            $affected2 = IntMemberPublication::where('id', $request->id_cp)->update($data);
+            $affected2 = IntMemberPublication::where('id', $request->id_cp)->update($data2);
 
-            if ($affected) {
+            if ($affected>0 || $affected2>0) {
                 $logInfo = array(
                     'user' => auth()->user()->nim_nik,
                     'activity' => 'Reject CP Publication by Mentor ID='.$request->id_cp,
