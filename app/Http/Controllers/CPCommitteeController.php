@@ -131,7 +131,7 @@ class CPCommitteeController extends Controller
             $file_name = '';
             $file_save = '';
             $file_type = '';
-            if(!empty($request->file('file')) || $request->file('file') !== ''){
+            if($request->hasFile('file')){
                 $file = $request->file('file');
                 $file_name = auth()->user()->nim_nik."_".$file->getClientOriginalName();
                 $file_save = "committee/".$file_name;
@@ -155,7 +155,7 @@ class CPCommitteeController extends Controller
                 'file' => $file_save,
                 'file_type' => $file_type,
                 'created_by' => auth()->user()->nim_nik,
-                'updated_at' => date('Y-m-d H:i:s'),
+                'created_at' => date('Y-m-d H:i:s'),
             );
 
             $insert = CPCommittee::insertGetId($data);
@@ -221,7 +221,7 @@ class CPCommitteeController extends Controller
             $file_name = '';
             $file_save = '';
             $file_type = '';
-            if(!empty($request->file('file')) || $request->file('file') !== ''){
+            if($request->hasFile('file')){
                 $file = $request->file('file');
                 $file_name = auth()->user()->nim_nik."_".$file->getClientOriginalName();
                 $file_save = "committee/".$file_name;

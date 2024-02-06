@@ -23,7 +23,8 @@ class CPInternship extends Model
         ->join('m_activity_category AS ac', 'cp.id_activity_category', 'ac.id')
         ->join('m_level_internship AS l', 'cp.id_level', 'l.id')
         ->join('m_role_internship AS r', 'cp.id_role', 'r.id')
-		->select('cp.*', 'at.name AS type_name', 'ac.name AS category_name', 'l.name AS level_name', 'r.name AS role_name');
+		->select('cp.*', 'at.name AS type_name', 'ac.name AS category_name', 'l.name AS level_name', 'r.name AS role_name')
+		->where('cp.na', 'N');
 	}
 
     public static function searchFilter($query, $search)
@@ -36,7 +37,7 @@ class CPInternship extends Model
     public static function statusFilter($query, $status)
 	{
 		if ($status == 'all') return $query;
-		return $query->where('cp.na', $status);
+		return $query->where('cp.approve', $status);
 	}
 
     public static function orderFilter($query, $orderBy, $order)

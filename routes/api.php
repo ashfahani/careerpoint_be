@@ -7,6 +7,7 @@ use App\Http\Controllers\CPInternshipController;
 use App\Http\Controllers\CPOrganizationController;
 use App\Http\Controllers\CPPublicationController;
 use App\Http\Controllers\CPSeminarController;
+use App\Http\Controllers\IntOrganizationController;
 use App\Http\Controllers\MasterCommittee;
 use App\Http\Controllers\MasterCompetition;
 use App\Http\Controllers\MasterInternship;
@@ -207,4 +208,27 @@ Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'external'], function 
     Route::post('seminar/get-by-mentor', [CPSeminarController::class, 'getCPbyMentor']);    
     Route::post('seminar/approve-cp', [CPSeminarController::class, 'approve']);
     Route::post('seminar/reject-cp', [CPSeminarController::class, 'reject']);
+});
+
+Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'internal'], function () {
+    // Organization
+    Route::post('organization/get-cp', [IntOrganizationController::class, 'getCP']);
+    Route::get('organization/get-cp-detail/{id}', [IntOrganizationController::class, 'getCPDetails']);
+    Route::post('organization/add', [IntOrganizationController::class, 'add']);    
+    Route::post('organization/update', [IntOrganizationController::class, 'update']);
+    Route::post('organization/delete/{id}', [IntOrganizationController::class, 'delete']);    
+    Route::post('organization/finalize-cp', [IntOrganizationController::class, 'finalize']);   
+    Route::post('organization/approve-cp', [IntOrganizationController::class, 'approve']);
+    Route::post('organization/reject-cp', [IntOrganizationController::class, 'reject']);
+    Route::post('organization/get-all-member', [IntOrganizationController::class, 'getAllCPMember']);
+    Route::post('organization/add-member', [IntOrganizationController::class, 'addMember']);
+    Route::post('organization/update-member', [IntOrganizationController::class, 'updateMember']);
+    Route::post('organization/delete-member/{id}', [IntOrganizationController::class, 'deleteMember']);
+
+    // Internship
+
+    // Publication
+
+    // Committee
+
 });
