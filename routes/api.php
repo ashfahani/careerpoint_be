@@ -18,6 +18,7 @@ use App\Http\Controllers\MasterOrganization;
 use App\Http\Controllers\MasterPublication;
 use App\Http\Controllers\MasterSeminar;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\UploadController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -280,4 +281,8 @@ Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'internal'], function 
 Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'reporting'], function () {
     Route::post('report-by-periodic', [ReportController::class, 'reportByPeriod']);
     Route::post('report-by-student', [ReportController::class, 'reportByMhsw']);
+});
+
+Route::group(['middleware' => 'auth:sanctum', 'prefix' => 'upload'], function () {
+    Route::post('upload-internal', [UploadController::class, 'uploadInternal']);
 });
